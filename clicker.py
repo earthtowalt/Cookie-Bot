@@ -17,19 +17,22 @@ import sys
 from pynput import keyboard
 import _thread
 
-turned_on = False
-buy_upgrades_turned_on = False
+flags = {}
+flags["buy upgrades"] = False
+flags["click cookie"] = False
+flags["buy buildings"] = False
 
 def click_cookie():
-    global turned_on
-    start = time.time()
-    while(1):
-        if turned_on:
+    global flags
+    while(True):
+        if flags['click cookie']:
             pyautogui.click(264, 468, 2)
+            time.sleep(0.00002)
 
 def buy_buildings():
-    while(1):
-        if False:
+    global flags
+    while(True):
+        if flags['buy buildings']:
             pyautogui.click(1736, 354)
             pyautogui.click(1643, 427)
             pyautogui.click(1734, 507)
@@ -40,10 +43,12 @@ def buy_buildings():
             pyautogui.click(1716, 853)
             pyautogui.click(1752, 946)
             pyautogui.click(1701, 999)
+            time.sleep(5)
 def buy_upgrades():
-    while(1):
-        if buy_upgrades_turned_on:
+    while(True):
+        if flags['buy upgrades']:
             pyautogui.click(1581, 219)
+            time.sleep(5)
 def on_press(key):
     try:
         print('{0}'.format(
@@ -53,30 +58,33 @@ def on_press(key):
             key))
 
 def on_release(key):
-    global turned_on
-    global buy_upgrades_turned_on
-    if key == keyboard.Key.space:
-        turned_on = not turned_on
+    global flags
 
     try:
         if key.char == 'z':
-            buy_upgrades_turned_on = not buy_upgrades_turned_on
+            flags['click cookie'] = not flags['click cookie']
+        if key.char == 'x':
+            flags['buy buildings'] = not flags['buy buildings']
+        if key.char == 'c':
+            flags['buy upgrades'] = not flags['buy upgrades']
     except AttributeError:
         pass
 
+    # Stop listener
     if key == keyboard.Key.esc:
-        # Stop listener
+        
         sys.exit()
 
-# Spin up clicking threads.
-_thread.start_new_thread(click_cookie, ())
-_thread.start_new_thread(buy_buildings, ())
-_thread.start_new_thread(buy_upgrades, ())
 
 
-# Collect events until released
+if __name__ == "__main__":
+    # Spin up clicking threads.
+    _thread.start_new_thread(click_cookie, ())
+    _thread.start_new_thread(buy_buildings, ())
+    _thread.start_new_thread(buy_upgrades, ())
 
-with keyboard.Listener(
-        on_press=on_press,
-        on_release=on_release) as listener:
-    listener.join()
+
+    # Collect events until released
+
+    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+        listener.join()
